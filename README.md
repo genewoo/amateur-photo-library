@@ -1,11 +1,11 @@
-#Mac-PhotoLibrary
+#Amateur Photo Library
 
 Just a simple photo tool for myself. I used to put the photo everywhere on my disk / NAS / share folder. Meanwhile, I can't use iPhoto on Mac, since I had XX GB Files.
 
 
 ## Major Feature
 
-* Simple user interface to preview the photo on Mac
+* Simple user interface to preview the photo
   * See EXIF information
   * Go to the place of Phoho
   * Show avaiable format of current photo.
