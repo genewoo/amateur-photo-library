@@ -35,7 +35,7 @@ describe Dummy do
 
   context "exif_json" do
     before(:all) do
-      result = @d.exif_json(`type -p exiftool`, 'test/samples/20100820_006.jpg')
+      result = @d.exif_json('test/samples/20100820_006.jpg')
       result.should_not nil
       exifinfo = JSON.parse(result)
       exifinfo[0].should_not nil
@@ -49,11 +49,22 @@ describe Dummy do
 
 
     it "will be used in a ExifJson object" do
-      json = PhotoLibrary::ExifJson.new(@result)
+      json = PhotoLibrary::ExifJson.load(@result)
       json.City.should eq "Cupertino"
     end
     
     
+  end
+
+  context "file_hash" do
+    before(:all) do
+      @result = @d.file_hash('test/samples/20100820_006.jpg')
+    end
+
+    it "will calculate sha1 of file" do
+      @result.should eq "c2c939d5b529c68d696288e784b351cdf561d0cf"
+    end
+
   end
 
   context "confirm" do
@@ -68,7 +79,19 @@ describe Dummy do
   end
 end
 
-describe Config do
+describe PhotoLibrary::PhotoModel do
+  context "Initial Model by File Name" do
+    before(:all) do
+      @model = PhotoLibrary::PhotoModel.new('test/samples/20100820_006.jpg')
+    end
+    it "should load exif information from file" do
+      @model.should_not nil
+      @model.title.should eq '20100820_006.jpg'
+    end
+  end
+end
+
+describe PhotoLibrary::Config do
   context "Without indicate config file" do
     before(:all) do
       system('cp lib/photo-library/assets/photo-library.yml ~/.photo-library.yml')

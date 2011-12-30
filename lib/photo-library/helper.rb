@@ -1,6 +1,8 @@
+
 module PhotoLibrary
   module Helper
 
+require 'digest'
 =begin
     def exit!(msg)
       puts msg
@@ -8,7 +10,8 @@ module PhotoLibrary
     end
 =end
 
-    def exif_json(exiftool, filename)
+    def exif_json(filename, exiftool = nil)
+      exiftool = `type -p exiftool` if exiftool.nil?
       exiftool.gsub!("\n", "")
       json = IO.popen("#{exiftool} -j #{filename}")
       json.readlines.join
@@ -21,6 +24,13 @@ module PhotoLibrary
       else
         false
       end
+    end
+
+
+    def file_hash(file_name)
+#      Digest::MD5.hexdigest(File.read(file_name)) if File.exist?(file_name)
+      # seems SHA1 get less chance have data corruption
+      Digest::SHA1.hexdigest(File.read(file_name)) if File.exist?(file_name)
     end
 
     def folder_exists!(folder)
