@@ -1,8 +1,8 @@
+require 'digest'
 
 module PhotoLibrary
   module Helper
 
-require 'digest'
 =begin
     def exit!(msg)
       puts msg
