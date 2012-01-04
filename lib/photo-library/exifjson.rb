@@ -5,7 +5,7 @@ require 'json'
 module PhotoLibrary
   # it is a readonly value object
 
-  PhotoLibrary::DbConnection.instance.connection
+#  PhotoLibrary::DbConnection.instance.connection
 
   class ExifJson
     attr_accessor :json
@@ -23,7 +23,7 @@ module PhotoLibrary
   end
 
   class PhotoModel < Sequel::Model(:photos)
-
+    include PhotoLibrary::DbHelper
     include PhotoLibrary::Helper
 
 #    include ExitJson
@@ -70,8 +70,37 @@ module PhotoLibrary
       File.join(self.lib_path, self.json["FileName"])
     end
 
+    def self.init
+      DB.create_table? :photos do
+#        primary_key :id
+        String :hash, :unique => true, :null => false #SHA-1 code
+#        TrueClass :active, :default => true
+#        foreign_key :category_id, :categories
+        
+        Fixnum :size, :unsigned => true #Size and SHA will check duplicate
+        
+        String :lib_path #relative path of library
+        DateTime :time_taken #when do you take the photo
+        String :title # a title of picture
+        String :notes # if you want to write something
+        String :original_path, :null => false #include file name to restore it
+#        :tags #tag the picture TODO
+#        DateTime :created_at
+        String :json, :text=>true #json from exiftool
+        index [:hash, :size]
+      end
+    end
+
     def self.check_duplicate(model)
     end
 
+    def before_save
+      columns.each { |c|
+        
+      }
+    end
+
+
+    init
   end
 end

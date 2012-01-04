@@ -22,11 +22,16 @@ module PhotoLibrary
   end
 
   module DbHelper
-    def db_init
-    end
 
-    def regist_model
-      self.init
-    end
+    DB = DbConnection.instance.connection
+
+
+#    def db_init
+#    end
+
+#    def self.regist_model
+#      init
+#    end
+    
   end
 end
