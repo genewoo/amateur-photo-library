@@ -32,7 +32,7 @@ module PhotoLibrary
     attr_accessor :id #identify of record
 
     #index_hash_size
-    attr_accessor :hash #SHA-1 code
+    attr_accessor :hash_code #SHA-1 code
     attr_accessor :size #Size and SHA will check duplicate
     
     attr_accessor :lib_path #relative path of library
@@ -46,34 +46,64 @@ module PhotoLibrary
 
 
     #transit fields
-    attr_accessor :duplicated
+    attr_accessor :duplicated 
 
     #json will be keep as blob
 
 
-    def initialize(file_name)
-      self.hash = file_hash(file_name)
-      self.original_path = File.expand_path(file_name)
-      self.size = File.size(file_name)
-      #should check duplication
-      exifinfo = JSON.parse(exif_json(file_name))
-      self.json = exifinfo[0]
-      self.time_taken = json["DateTimeOriginal"] # || other field
-      # this is the default exiftool date time format
-      self.time_taken = DateTime.strptime(self.time_taken, "%Y:%m:%d %H:%M:%S")
-      self.title = json["FileName"]
-      #support unix for first version YYYY/MM/DD
-      self.lib_path = "%4d/%02d/%02d" % [self.time_taken.year, self.time_taken.month, self.time_taken.day]
+    def self.exif_json(filename, exiftool = nil)
+      exiftool = `type -p exiftool` if exiftool.nil?
+      exiftool.gsub!("\n", "")
+      json = IO.popen("#{exiftool} -j #{filename}")
+      json.readlines.join
+    end
+
+
+    def self.load_file(file_name)
+      hash_code = Digest::SHA1.hexdigest(File.read(file_name)) if File.exist?(file_name)
+      result = self[:hash_code => hash_code]
+      if result.nil?
+        result = self.new
+        result.hash_code = hash_code
+        result.original_path = File.expand_path(file_name)
+        result.size = File.size(file_name)
+        #should check duplication
+        exifinfo = JSON.parse(exif_json(file_name))
+        result.json = exifinfo[0]
+        result.time_taken = result.json["DateTimeOriginal"] # || other field
+        # this is the default exiftool date time format
+        result.time_taken = DateTime.strptime(result.time_taken, "%Y:%m:%d %H:%M:%S")
+        result.title = result.json["FileName"]
+        #support unix for first version YYYY/MM/DD
+        result.lib_path = "%4d/%02d/%02d" % [result.time_taken.year, result.time_taken.month, result.time_taken.day]
+        result.duplicated = false;
+=begin
+        columns.each { |c|
+          next if c == :id
+          result[c] = result.instance_eval(c.to_s)
+          p result[c]
+  #        self[c] = self.instance_eval(c.to_s) unless self.instance_variable_defined?(c.to_s)
+        }
+=end
+      else
+        result.duplicated = true
+        result.after_load
+      end
+      result
     end
 
     def target_path
       File.join(self.lib_path, self.json["FileName"])
     end
 
+    def self.drop
+      DB.drop_table :photos
+    end
+
     def self.init
       DB.create_table? :photos do
-#        primary_key :id
-        String :hash, :unique => true, :null => false #SHA-1 code
+        primary_key :id
+        String :hash_code, :unique => true, :null => false #SHA-1 code
 #        TrueClass :active, :default => true
 #        foreign_key :category_id, :categories
         
@@ -87,19 +117,26 @@ module PhotoLibrary
 #        :tags #tag the picture TODO
 #        DateTime :created_at
         String :json, :text=>true #json from exiftool
-        index [:hash, :size]
+        index [:hash_code, :size]
       end
-    end
-
-    def self.check_duplicate(model)
     end
 
     def before_save
       columns.each { |c|
-        
+        next if [:id, :json].include? c
+        self[c] = instance_eval(c.to_s)
       }
+      self[:json] = JSON.dump(self.json)
+      super
     end
 
+    def after_load
+      columns.each { |c|
+        self.instance_variable_set("@#{c.to_s}".to_sym, self[c] )
+      }
+      self.json = JSON.parse(self.json)
+      self
+    end
 
     init
   end

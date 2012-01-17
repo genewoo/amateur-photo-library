@@ -81,15 +81,22 @@ end
 
 describe PhotoLibrary::PhotoModel do
 
-  after(:all) do
-    PhotoLibrary::PhotoModel.drop
-    p "after all"
-  end
+
   context "Initial Model by File Name" do
     before(:all) do
-      @model = PhotoLibrary::PhotoModel.new('test/samples/20100820_006.jpg')
-#      @model.save
+#      PhotoLibrary::PhotoModel.drop
+#      PhotoLibrary::PhotoModel.init
+      @model = PhotoLibrary::PhotoModel.load_file('test/samples/20100820_006.jpg')
+#      @model = PhotoLibrary::PhotoModel.new
+#      @model.load_file('test/samples/20100820_006.jpg')
+      @model.save
     end
+
+    after(:all) do
+      #PhotoLibrary::PhotoModel
+      #p "after all"
+    end
+
     it "should load exif information from file" do
       @model.should_not nil
       @model.title.should eq '20100820_006.jpg'
@@ -97,7 +104,7 @@ describe PhotoLibrary::PhotoModel do
 
     it "should get target path correctly" do
       @model.target_path.should eq "2010/08/20/20100820_006.jpg"
-      binding.pry
+
     end
   end
 end
