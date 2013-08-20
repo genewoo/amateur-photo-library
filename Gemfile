@@ -1,8 +1,8 @@
 # A sample Gemfile
 # gem "rails"
 
-#source "http://rubygems.org"
-source "http://ruby.taobao.org"
+source "http://rubygems.org"
+#source "http://ruby.taobao.org"
 #source :rubygems
 
 gem "rake", ">= 0.9.2"
