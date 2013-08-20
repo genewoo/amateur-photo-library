@@ -4,9 +4,12 @@ require 'singleton'
 module PhotoLibrary
   class DbConnection
     include Singleton
+    #extend Helper
+
+
     DEFAULT_FOLDER = '~/.photo-library'
     def initialize
-      Dir.mkdir(File.join(Dir.home, ".photo-library"), 0700) unless Dir.exists?(DEFAULT_FOLDER)
+      Helper.folder_exists! DEFAULT_FOLDER
       @dbfile = '~/.photo-library/database.sqlite3' if @dbfile.nil?
       @dbfile = File.expand_path(@dbfile)
       unless File.exists?(@dbfile) 

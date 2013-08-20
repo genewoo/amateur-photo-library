@@ -3,13 +3,11 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 require 'json'
 
 class Dummy
-  include PhotoLibrary::Helper
-
 end
 
 describe Dummy do
   before(:all) do
-    @d = Dummy.new
+    @d = PhotoLibrary::Helper
   end
 
   context "folder_exists " do
@@ -104,7 +102,6 @@ describe PhotoLibrary::PhotoModel do
 
     it "should get target path correctly" do
       @model.target_path.should eq "2010/08/20/20100820_006.jpg"
-
     end
   end
 end

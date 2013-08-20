@@ -23,8 +23,7 @@ module PhotoLibrary
   end
 
   class PhotoModel < Sequel::Model(:photos)
-    include PhotoLibrary::DbHelper
-    include PhotoLibrary::Helper
+    include DbHelper
 
 #    include ExitJson
 
@@ -50,15 +49,6 @@ module PhotoLibrary
 
     #json will be keep as blob
 
-
-    def self.exif_json(filename, exiftool = nil)
-      exiftool = `type -p exiftool` if exiftool.nil?
-      exiftool.gsub!("\n", "")
-      json = IO.popen("#{exiftool} -j #{filename}")
-      json.readlines.join
-    end
-
-
     def self.load_file(file_name)
       hash_code = Digest::SHA1.hexdigest(File.read(file_name)) if File.exist?(file_name)
       result = self[:hash_code => hash_code]
@@ -68,7 +58,7 @@ module PhotoLibrary
         result.original_path = File.expand_path(file_name)
         result.size = File.size(file_name)
         #should check duplication
-        exifinfo = JSON.parse(exif_json(file_name))
+        exifinfo = JSON.parse(Helper.exif_json(file_name))
         result.json = exifinfo[0]
         result.time_taken = result.json["DateTimeOriginal"] # || other field
         # this is the default exiftool date time format
